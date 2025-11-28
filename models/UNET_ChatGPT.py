@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class ResidualConvBlock(nn.Module):
+class ResidualConvBlock(nn.Module):  #Blocs résiduels 
     def __init__(self, in_channels, out_channels):
         super().__init__()
         self.conv1 = nn.Conv2d(in_channels, out_channels, 3, padding=1)
@@ -20,8 +20,8 @@ class ResidualConvBlock(nn.Module):
         x = self.bn2(self.conv2(x))
         return F.relu(x + residual)
 
-class UNetEnhanced(nn.Module):
-    def __init__(self, in_channels=2, base_channels=128, dropout=0.1):
+class UNetEnhanced(nn.Module): 
+    def __init__(self, in_channels=2, base_channels=128, dropout=0.1):  #2 canaux d'entrée : 1 pour l'image et un pour le temps
         super().__init__()
         # Encodeur
         self.enc1 = ResidualConvBlock(in_channels, base_channels)
@@ -32,7 +32,7 @@ class UNetEnhanced(nn.Module):
         self.bottleneck = ResidualConvBlock(base_channels*2, base_channels*4)
         self.drop = nn.Dropout2d(dropout)
         
-        # Decodeur
+        # Décodeur
         self.up2 = nn.ConvTranspose2d(base_channels*4, base_channels*2, 2, stride=2)
         self.dec2 = ResidualConvBlock(base_channels*4, base_channels*2)
         
@@ -53,7 +53,7 @@ class UNetEnhanced(nn.Module):
         # Bottleneck
         b = self.drop(self.bottleneck(self.pool(e2)))
         
-        # Decodeur avec interpolation
+        # Décodeur avec interpolation
         up2_b = F.interpolate(self.up2(b), size=e2.shape[2:], mode="nearest")
         d2 = self.dec2(torch.cat([up2_b, e2], dim=1))
         
@@ -62,3 +62,4 @@ class UNetEnhanced(nn.Module):
         
         out = self.out_conv(d1)
         return out
+
