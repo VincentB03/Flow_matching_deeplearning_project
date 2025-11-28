@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class UNet4(nn.Module):
-    def __init__(self, in_channels=2, base_channels=64):
+    def __init__(self, in_channels=2, base_channels=64): #2 canaux :  1 pour l'image, 1 pour le temps
         super().__init__()
         # Encodeur
         self.enc1 = nn.Conv2d(in_channels, base_channels, 3, padding=1)
@@ -19,8 +19,7 @@ class UNet4(nn.Module):
         
         self.up1 = nn.ConvTranspose2d(base_channels*2, base_channels, 2, stride=2)
         self.dec1 = nn.Conv2d(base_channels*2, base_channels, 3, padding=1)
-        
-        # Sortie
+
         self.out_conv = nn.Conv2d(base_channels, 1, 1)
     
     def forward(self, x, t):
@@ -34,7 +33,7 @@ class UNet4(nn.Module):
         # Bottleneck
         b = F.relu(self.bottleneck(self.pool(e2)))
         
-        # Decodeur avec interpolation pour corriger les tailles
+        # Decodeur
         up2_b = F.interpolate(self.up2(b), size=e2.shape[2:], mode="nearest")
         d2 = F.relu(self.dec2(torch.cat([up2_b, e2], dim=1)))
         
